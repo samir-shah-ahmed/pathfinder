@@ -36,10 +36,11 @@ source research/ros2_ws/install/setup.bash
 ros2 launch bicycle_simulation simulation.launch.py rviz:=true
 ```
 
-Use the Python environment that provides your ROS installation. Do not replace
-Jetson system packages with the desktop dependencies. The Docker route avoids
-native Python packaging conflicts; `--break-system-packages` is used only inside
-the disposable image, never by the native build script.
+Use a virtual environment created with `python3 -m venv --system-site-packages`
+so apt ROS modules remain visible. Activate it before installing the pinned core.
+The build script uses that same interpreter for colcon and interface generation.
+The Docker image follows this arrangement. Do not replace Jetson system packages
+with the desktop dependencies.
 
 RViz displays the estimated bicycle, reference path, odometry and TF. The URDF is
 illustrative visual geometry, not Gazebo contact physics or a measured robot model.
