@@ -1,0 +1,1059 @@
+You are the lead robotics, autonomous-systems, computer-vision, controls, and embedded-software engineer for a research project to design and build a next-generation autonomous bicycle.
+
+PROJECT GOAL
+
+Build a complete autonomous bicycle research platform from the ground up.
+
+The starting inspiration is this project:
+
+https://amannindra.com/projects/autonomous-bicycle/
+
+Do NOT simply clone or reproduce it.
+
+Study the architecture and technical ideas used by the project, reproduce useful capabilities as baselines where appropriate, and then design a substantially more capable system.
+
+The final system should eventually be capable of:
+
+1. Maintaining bicycle balance
+2. Following trajectories and waypoints
+3. Detecting pedestrians, bicycles, vehicles, curbs, cones, and obstacles
+4. Estimating drivable/traversable space
+5. Estimating depth
+6. Localizing itself using multiple sensors
+7. Fusing IMU, GNSS, wheel encoder, steering encoder, and visual information
+8. Planning collision-free trajectories
+9. Navigating roads, bike paths, parking lots, sidewalks where appropriate, and unstructured surfaces such as gravel
+10. Running onboard NVIDIA Jetson hardware
+11. Operating through ROS 2
+12. Running the same autonomy software in simulation and on the physical bicycle
+13. Recording synchronized datasets and telemetry
+14. Supporting simulation-in-the-loop and hardware-in-the-loop testing
+15. Detecting failures and transitioning to a safe state
+16. Providing quantitative evaluation of every major subsystem
+
+The project should be designed as a serious university robotics/research platform rather than a demonstration script.
+
+==================================================
+CORE ENGINEERING PRINCIPLE
+==================================================
+
+Use a modular robotics architecture.
+
+Do NOT create one giant Python program.
+
+Target architecture:
+
+Sensors
+   ↓
+Drivers
+   ↓
+Time synchronization
+   ↓
+State Estimation
+   ↓
+Perception
+   ↓
+World Model
+   ↓
+Planning
+   ↓
+Trajectory Generation
+   ↓
+Balance + Trajectory Control
+   ↓
+Low-level actuator controller
+   ↓
+Bicycle
+
+ROS 2 should provide the communication infrastructure.
+
+Define clean ROS messages/topics/services/actions and document the interfaces between components.
+
+The physical system and simulation should expose equivalent ROS interfaces whenever practical.
+
+==================================================
+1. REPOSITORY
+==================================================
+
+Create a professional repository.
+
+Suggested structure:
+
+autonomous-bicycle/
+│
+├── README.md
+├── LICENSE
+├── .gitignore
+├── docker/
+├── docs/
+│   ├── architecture/
+│   ├── hardware/
+│   ├── controls/
+│   ├── perception/
+│   ├── simulation/
+│   ├── safety/
+│   └── experiments/
+│
+├── ros2_ws/
+│   └── src/
+│       ├── bicycle_bringup/
+│       ├── bicycle_description/
+│       ├── bicycle_interfaces/
+│       ├── bicycle_perception/
+│       ├── bicycle_localization/
+│       ├── bicycle_state_estimation/
+│       ├── bicycle_world_model/
+│       ├── bicycle_planning/
+│       ├── bicycle_control/
+│       ├── bicycle_safety/
+│       ├── bicycle_logging/
+│       ├── bicycle_simulation/
+│       └── bicycle_hardware/
+│
+├── firmware/
+│   └── actuator_controller/
+│
+├── perception/
+├── controls/
+├── simulation/
+├── datasets/
+├── experiments/
+├── scripts/
+├── tests/
+└── config/
+
+You may improve this structure when technically justified.
+
+==================================================
+2. SOFTWARE ENVIRONMENT
+==================================================
+
+Build around:
+
+- Ubuntu
+- ROS 2
+- Python
+- C++ where performance or real-time behavior requires it
+- PyTorch
+- OpenCV
+- NumPy
+- NVIDIA CUDA/TensorRT where appropriate
+- Jetson deployment
+- RViz
+- rosbag2
+- simulation
+
+Containerize the development environment where practical.
+
+Create installation scripts rather than relying on undocumented manual configuration.
+
+Pin important dependencies.
+
+Create:
+
+setup scripts
+dependency documentation
+Docker configuration where useful
+development instructions
+Jetson deployment instructions
+
+Do not fabricate compatibility. Check actual package/version compatibility before choosing versions.
+
+==================================================
+3. BICYCLE MODEL
+==================================================
+
+Create a realistic bicycle model.
+
+Important states should include approximately:
+
+x
+y
+heading/yaw
+velocity
+roll/lean angle
+roll rate
+steering angle
+steering rate
+
+Model the relationship between:
+
+steering
+velocity
+lean
+turn radius
+lateral acceleration
+stability
+
+Document the equations.
+
+Implement both:
+
+a simplified model useful for controller development
+
+and
+
+a higher-fidelity simulation model
+
+Create unit tests validating important model behavior.
+
+==================================================
+4. SIMULATION / DIGITAL TWIN
+==================================================
+
+Build the simulation before requiring physical hardware.
+
+Create a bicycle URDF/Xacro model.
+
+Include simulated:
+
+RGB camera
+depth/stereo camera where supported
+IMU
+GNSS
+wheel encoder
+steering encoder
+
+Provide environments for:
+
+straight road
+curved road
+bike lane
+parking lot
+pedestrian environment
+obstacle course
+gravel/unstructured surface
+inclines
+poor lane markings
+
+Support disturbances including:
+
+IMU noise
+GNSS noise
+GNSS dropout
+camera noise
+wheel slip
+wind/lateral disturbance
+variable friction
+sensor latency
+
+Expose simulation through the same ROS interfaces intended for hardware.
+
+If multiple simulators are appropriate, select one primary simulator and document why.
+
+Investigate Gazebo and NVIDIA Isaac Sim before selecting the main approach.
+
+==================================================
+5. PERCEPTION
+==================================================
+
+Implement a modular perception stack.
+
+Do not make lane detection the sole representation of navigable space.
+
+The bicycle needs to estimate:
+
+"What space is safe to ride through?"
+
+Implement or integrate:
+
+OBJECT DETECTION
+
+Classes should include:
+
+person
+car
+truck
+bus
+motorcycle
+bicycle
+cone
+barrier
+animal where supported
+other relevant obstacles
+
+Start with a modern YOLO-family model if technically appropriate.
+
+DRIVABLE-SPACE / SEMANTIC SEGMENTATION
+
+Identify:
+
+road
+bike lane
+sidewalk
+gravel
+grass
+curb
+concrete
+dirt
+unknown/non-traversable space
+
+DEPTH
+
+Support monocular depth initially.
+
+Design the interface so stereo/depth cameras can later replace or augment monocular depth.
+
+LANE/PATH DETECTION
+
+Implement lane detection as an additional signal rather than the sole navigation representation.
+
+TRAVERSABILITY
+
+Develop a traversability representation combining:
+
+segmentation
+depth
+obstacles
+surface type
+slope where available
+
+Output a local cost map or equivalent representation.
+
+==================================================
+6. BIRD'S-EYE / WORLD REPRESENTATION
+==================================================
+
+Transform perception outputs into a local navigation representation.
+
+Investigate and implement an appropriate combination of:
+
+BEV representation
+occupancy grid
+cost map
+local semantic map
+
+Represent:
+
+free space
+occupied space
+unknown space
+traversability cost
+dynamic objects
+desired path
+
+The planner should operate primarily on this representation instead of raw neural-network output.
+
+==================================================
+7. STATE ESTIMATION
+==================================================
+
+Create a fused bicycle state estimator.
+
+Sensors should eventually include:
+
+IMU
+GNSS
+RTK GNSS
+wheel encoder
+steering encoder
+camera/VIO
+
+Implement an EKF baseline.
+
+State may contain approximately:
+
+[x, y, velocity, heading, roll, roll_rate, steering_angle]
+
+Investigate whether additional states such as sensor biases should be included.
+
+Provide simulation tests with known ground truth.
+
+Measure:
+
+position error
+heading error
+velocity error
+roll estimation error
+
+Design interfaces so alternative filters such as UKF or factor-graph estimation can later be evaluated.
+
+==================================================
+8. CONTROL SYSTEM
+==================================================
+
+Treat BALANCE and TRAJECTORY TRACKING as related but explicit control problems.
+
+Implement controllers progressively.
+
+CONTROLLER A:
+PID/basic feedback baseline
+
+CONTROLLER B:
+Stanley or equivalent path-tracking baseline
+
+CONTROLLER C:
+LQR balance controller
+
+CONTROLLER D:
+Model Predictive Control
+
+MPC should consider terms such as:
+
+path tracking error
+heading error
+roll/lean
+steering effort
+steering-rate smoothness
+stability constraints
+
+Implement actuator limits.
+
+Implement velocity-dependent control behavior.
+
+Build controller benchmarks so PID, Stanley, LQR and MPC can be quantitatively compared.
+
+Do not jump directly to machine learning before conventional controllers work.
+
+==================================================
+9. REINFORCEMENT LEARNING RESEARCH
+==================================================
+
+Once deterministic controllers work in simulation, create an experimental RL subsystem.
+
+Investigate PPO or another justified algorithm.
+
+Possible observation space:
+
+roll
+roll rate
+steering
+steering rate
+velocity
+heading error
+cross-track error
+trajectory curvature
+
+Possible actions:
+
+steering command
+steering rate
+speed command
+
+Use simulation.
+
+Implement domain randomization over:
+
+mass
+center of gravity
+tire friction
+sensor noise
+latency
+wind
+motor response
+surface friction
+
+Never make the physical bicycle the first environment in which an unvalidated learned controller is tested.
+
+Compare:
+
+PID
+LQR
+MPC
+RL
+
+and potentially:
+
+MPC + learned residual controller
+
+==================================================
+10. PATH PLANNING
+==================================================
+
+Implement a hierarchy:
+
+Global Planner
+      ↓
+Local Planner
+      ↓
+Trajectory Generator
+      ↓
+Controller
+
+Global planning may initially operate on predefined maps/waypoints.
+
+Local planning must respond to:
+
+pedestrians
+vehicles
+static obstacles
+curbs
+non-traversable terrain
+
+Investigate appropriate algorithms such as:
+
+A*
+Hybrid A*
+D*
+RRT*
+trajectory optimization
+
+Do not implement every algorithm unnecessarily.
+
+Choose justified baselines.
+
+Generate dynamically feasible bicycle trajectories.
+
+==================================================
+11. HARDWARE ARCHITECTURE
+==================================================
+
+Design around a likely platform containing:
+
+NVIDIA Jetson Orin Nano or Orin NX
+RGB/stereo camera
+IMU
+RTK-capable GNSS
+wheel encoder
+steering encoder
+steering actuator
+drive motor/controller if bicycle propulsion is automated
+microcontroller such as Teensy/STM32
+physical emergency stop
+
+High-level autonomy runs on Jetson.
+
+Hard real-time actuator control should run on the microcontroller.
+
+Design a communications interface between Jetson and MCU.
+
+Investigate:
+
+CAN
+UART
+USB serial
+Ethernet
+
+Select an appropriate architecture and explain the decision.
+
+Do NOT assume final hardware purchases without documenting requirements and alternatives.
+
+==================================================
+12. SAFETY
+==================================================
+
+Safety must be a first-class subsystem.
+
+Implement a safety state machine such as:
+
+BOOT
+SELF_TEST
+STANDBY
+ARMED
+AUTONOMOUS
+DEGRADED
+EMERGENCY_STOP
+FAULT
+
+Monitor:
+
+ROS node health
+camera heartbeat
+IMU heartbeat
+GNSS validity
+controller frequency
+Jetson temperature
+CPU/GPU utilization
+battery voltage
+communications
+steering actuator health
+
+Create watchdogs.
+
+Loss of high-level compute must not leave the actuator continuing an old steering command indefinitely.
+
+Design the MCU so communication timeout produces a defined safe response.
+
+Document emergency-stop behavior.
+
+==================================================
+13. DATA COLLECTION
+==================================================
+
+Create a synchronized logging system.
+
+Record:
+
+camera
+IMU
+GNSS
+encoder values
+steering
+velocity
+perception outputs
+estimated state
+planned trajectory
+controller commands
+system health
+
+Use ROS bagging where appropriate.
+
+Create metadata for:
+
+weather
+surface
+lighting
+route
+experiment
+software version
+hardware configuration
+
+Develop tools for extracting datasets from recorded runs.
+
+==================================================
+14. CUSTOM BICYCLE DATASET
+==================================================
+
+Design a future data-collection pipeline for an egocentric autonomous-bicycle dataset.
+
+Target conditions include:
+
+sun
+clouds
+sunset
+night
+shadows
+wet pavement
+gravel
+asphalt
+concrete
+parking lots
+bike paths
+pedestrians
+construction
+poor markings
+
+Create annotation specifications.
+
+Potential annotations:
+
+object bounding boxes
+semantic segmentation
+drivable area
+surface class
+lane/path markings
+depth where ground truth is available
+
+Do not require the physical dataset before the simulation platform can operate.
+
+==================================================
+15. PERFORMANCE
+==================================================
+
+The eventual system must run in real time on edge hardware.
+
+Measure:
+
+model latency
+FPS
+CPU usage
+GPU usage
+memory
+power
+ROS message latency
+
+Create benchmarking scripts.
+
+Investigate:
+
+TensorRT
+FP16
+INT8 where appropriate
+model pruning
+smaller architectures
+
+Optimization must preserve sufficient accuracy.
+
+==================================================
+16. EXPERIMENTAL EVALUATION
+==================================================
+
+Build an evaluation framework.
+
+PERCEPTION:
+
+mAP
+IoU
+precision
+recall
+depth metrics
+
+STATE ESTIMATION:
+
+position RMSE
+heading RMSE
+velocity RMSE
+roll RMSE
+
+CONTROL:
+
+cross-track error
+heading error
+roll RMS
+maximum roll
+steering smoothness
+recovery from disturbance
+
+NAVIGATION:
+
+completion rate
+collision rate
+intervention rate
+minimum obstacle distance
+route completion time
+
+COMPUTE:
+
+FPS
+latency
+power
+GPU utilization
+memory
+
+Automatically generate experiment reports where practical.
+
+==================================================
+17. BASELINE REPRODUCTION
+==================================================
+
+Use the following project as a baseline/reference:
+
+https://amannindra.com/projects/autonomous-bicycle/
+
+Investigate its use of technologies including, where applicable:
+
+LaneATT
+YOLO
+HybridNets
+depth estimation
+Stanley/path tracking
+Jetson
+ROS
+Gazebo
+
+Do not blindly copy implementation details.
+
+Document:
+
+what the original project did
+what we reproduce
+what we change
+why we change it
+how our approach will be evaluated against the baseline
+
+==================================================
+18. RESEARCH
+==================================================
+
+Before choosing important algorithms, check primary sources and current documentation.
+
+Prefer:
+
+original papers
+official repositories
+official ROS documentation
+NVIDIA documentation
+peer-reviewed research
+
+Maintain:
+
+docs/references.md
+
+Use IEEE-style references.
+
+Do not invent papers, results, URLs, performance numbers, APIs, packages, or hardware specifications.
+
+==================================================
+19. TESTING
+==================================================
+
+Every major subsystem needs tests.
+
+Include:
+
+unit tests
+integration tests
+simulation tests
+ROS interface tests
+
+Examples:
+
+bicycle model produces expected turning behavior
+EKF converges toward ground truth
+controller follows straight trajectory
+controller follows curved trajectory
+controller responds to lateral disturbance
+planner avoids obstacle
+perception node publishes correctly
+sensor failure triggers degraded/fault state
+MCU heartbeat loss produces safe actuator state
+
+Create automated test scripts.
+
+==================================================
+20. CI
+==================================================
+
+Configure CI where practical.
+
+CI should at minimum check:
+
+Python formatting
+C++ formatting
+linting
+unit tests
+ROS package builds
+
+Do not make GPU-dependent tests mandatory for ordinary CI.
+
+==================================================
+21. DOCUMENTATION
+==================================================
+
+Create substantial documentation.
+
+README should explain:
+
+project purpose
+architecture
+current capabilities
+installation
+simulation
+launching
+testing
+repository organization
+
+Create architecture diagrams using Mermaid where appropriate.
+
+Document ROS topics.
+
+Create a table containing:
+
+topic
+message type
+publisher
+subscriber
+rate
+purpose
+
+Document coordinate frames and TF hierarchy.
+
+==================================================
+22. DEVELOPMENT PHASES
+==================================================
+
+Work approximately in this order:
+
+PHASE 0
+Repository and architecture
+
+PHASE 1
+Bicycle mathematical model
+
+PHASE 2
+Simulation
+
+PHASE 3
+ROS interfaces
+
+PHASE 4
+Basic controller
+
+PHASE 5
+State estimation
+
+PHASE 6
+Perception baseline
+
+PHASE 7
+World model / traversability
+
+PHASE 8
+Local planning
+
+PHASE 9
+MPC
+
+PHASE 10
+Safety system
+
+PHASE 11
+Data collection
+
+PHASE 12
+Jetson deployment
+
+PHASE 13
+Physical hardware integration
+
+PHASE 14
+RL research
+
+Do not wait until Phase 14 to test the project.
+
+The system should remain runnable after every major phase.
+
+==================================================
+23. HOW YOU SHOULD WORK
+==================================================
+
+You are not being asked merely to propose this project.
+
+BUILD IT.
+
+Use your workspace/computer capabilities to:
+
+create directories
+write code
+create configuration
+install appropriate dependencies when permitted
+build packages
+run tests
+run simulations when possible
+inspect errors
+debug failures
+update documentation
+
+Do not stop after generating an architecture document.
+
+Do not repeatedly ask me to manually create files you can create yourself.
+
+When something fails:
+
+1. inspect the error
+2. identify the likely cause
+3. fix it
+4. rerun the test
+5. document important lessons
+
+Do not claim something works unless you actually tested it when testing is possible.
+
+Do not fabricate successful test results.
+
+If a dependency or simulator cannot run in the available environment, clearly identify that limitation and continue building everything that can be built.
+
+==================================================
+24. ENGINEERING DECISION LOG
+==================================================
+
+Create:
+
+docs/DECISIONS.md
+
+For significant choices record:
+
+Decision
+Alternatives
+Reason
+Tradeoffs
+Date
+
+Examples:
+
+Gazebo vs Isaac Sim
+YOLO model choice
+EKF implementation
+CAN vs serial
+Jetson Orin Nano vs NX
+MPC solver
+occupancy-grid representation
+
+This prevents unexplained architecture changes.
+
+==================================================
+25. PROGRESS TRACKING
+==================================================
+
+Create:
+
+ROADMAP.md
+
+Use:
+
+[ ] Not started
+[~] In progress
+[x] Complete
+[!] Blocked
+
+Every completed item should correspond to actual code/documentation/tests.
+
+Also maintain:
+
+STATUS.md
+
+containing:
+
+Current working capabilities
+Current failing tests
+Known limitations
+Next engineering milestone
+
+==================================================
+26. IMPORTANT CONSTRAINTS
+==================================================
+
+Do not optimize for flashy demos at the expense of engineering quality.
+
+Do not claim autonomous operation until it has been demonstrated.
+
+Do not use simulated results as though they were physical results.
+
+Do not silently substitute fake sensor data for real data.
+
+Simulation/mock data must always be clearly labeled.
+
+Keep ML models replaceable.
+
+Keep hardware drivers replaceable.
+
+Separate configuration from source code.
+
+Use timestamps consistently.
+
+Design for reproducibility.
+
+Prioritize safety before physical autonomous testing.
+
+==================================================
+27. DEFINITION OF INITIAL SUCCESS
+==================================================
+
+The first major milestone is NOT a physical self-driving bicycle.
+
+The initial milestone is:
+
+A reproducible simulation in which a dynamically modeled bicycle receives simulated sensor measurements, estimates its state, follows a commanded trajectory, responds to disturbances, records telemetry, and can be visualized through ROS tools.
+
+It should be possible to launch this milestone with approximately one documented command.
+
+The next milestone should add perception and obstacle avoidance.
+
+Only after the simulated system is stable should physical actuation become the focus.
+
+==================================================
+START NOW
+==================================================
+
+First:
+
+1. Research the reference autonomous bicycle project.
+2. Inspect the current workspace/environment.
+3. Determine available OS, ROS, CUDA, Docker, GPU, and simulator capabilities.
+4. Create the repository.
+5. Write ARCHITECTURE.md.
+6. Write ROADMAP.md.
+7. Write DECISIONS.md.
+8. Define ROS package boundaries.
+9. Define message/topic interfaces.
+10. Implement the initial bicycle dynamics model.
+11. Add tests for that model.
+12. Run the tests.
+13. Fix failures.
+14. Begin the simulation integration.
+15. Continue working through the roadmap rather than stopping after the planning stage.
+
+At meaningful milestones, update STATUS.md.
+
+When making an architectural choice, prefer a working, testable implementation over unnecessary complexity.
+
+The objective is to leave the workspace containing an actual working autonomous-bicycle codebase, not merely a report describing one.

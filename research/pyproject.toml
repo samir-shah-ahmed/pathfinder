@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pathfinder-bicycle"
+version = "0.1.0"
+description = "Simulation-first autonomous bicycle research platform"
+requires-python = ">=3.10"
+dependencies = ["numpy==2.2.6", "scipy==1.15.3"]
+
+[project.optional-dependencies]
+dev = ["pytest==8.3.5", "ruff==0.11.13"]
+
+[project.scripts]
+pathfinder-sim = "pathfinder.simulation:main"
+
+[tool.setuptools.packages.find]
+include = ["pathfinder*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+

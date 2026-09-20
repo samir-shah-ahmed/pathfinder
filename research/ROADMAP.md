@@ -1,0 +1,24 @@
+# Roadmap
+
+Legend: [x] complete, [~] in progress, [ ] not started, [!] blocked here.
+
+- [x] Modular numerical core and preserved project specification.
+- [x] Reduced nonlinear model and model tests.
+- [x] Seeded simulation, synthetic observations, telemetry and metrics.
+- [x] PD/LQR lean control and analytic path guidance.
+- [x] Seven-state EKF baseline; GNSS dropout experiment.
+- [x] Grid A* baseline with conservative unknown-space handling.
+- [x] Simulation fault supervisor and failure tests.
+- [~] ROS boundaries: documented, adapters not implemented for new core.
+- [!] ROS/Gazebo integration execution: unavailable in this Windows session.
+- [ ] Whipple/multibody model and independent model validation.
+- [ ] Raw IMU/bias estimation, delayed measurements, VIO and RTK fusion.
+- [ ] Connect and test v1 perception against explicit output contracts.
+- [ ] Metric depth, BEV and semantic traversability integration.
+- [ ] Curvature/lean/obstacle constrained trajectory generation.
+- [ ] MPC benchmark and independent controller validation.
+- [ ] MCU protocol, watchdog, hardware safe-state design and HIL.
+- [ ] Dataset synchronization, annotations, rosbag pipeline.
+- [ ] Reproduce v1 Jetson benchmarks on the actual device.
+- [ ] Physical actuation and closed-course evaluation after safety review.
+- [ ] Simulation-only RL and domain randomization after deterministic baselines.
