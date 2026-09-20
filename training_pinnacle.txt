@@ -1,0 +1,79 @@
+
+
+Used to allocate a slurm job 
+salloc   --partition=cenvalarc.gpu  --nodes=1   --ntasks-per-node=2   --cpus-per-task=28   --mem=96G   --gres=gpu:l40s:1   --time=24:00:00
+
+Test GPU
+salloc   --partition=test  --nodes=1   --ntasks-per-node=2   --cpus-per-task=28   --mem=96G   --gres=gpu:a100:1   --time=01:00:00
+
+GET GPUS and their node
+
+sinfo -N -O "nodehost:18,statecompact:8,gres:24,gresused:24" | grep -i gpu | grep -i idle
+sinfo -N -O "nodehost:18,partition:20,statecompact:8,gres:24,gresused:24" | grep -i gpu | grep -i idle
+
+Check if any GPUs in my server: 
+squeue -u anindra
+
+Check who has used this node and what exactly they are using
+
+squeue -w gnode015 -o "%.10i %.9P %.20j %.8u %.2t %.10M %.20b"
+
+Found the queue table on that page. Here's what it says:
+
+| Queue | Max Wall Time | Default Time | Max Nodes/Job | Max jobs |
+|---|---|---|---|---|
+| **test** | **1 hour** | 5 min | 2 nodes | 1 |
+| bigmem | 3 days | 1 hr | 2 nodes | 2 |
+| gpu | 3 days | 1 hr | 2 nodes | 4 |
+| short | 6 hours | 1 hr | 4 nodes | 12 |
+| medium | 1 day | 6 hrs | 4 nodes | 6 |
+| long | 3 days | 1 day | 4 nodes | 3 |
+| cenvalarc.compute | 3 days | 1 day | 4 nodes | 3 |
+| cenvalarc.bigmem | 3 days | 1 day | 2 nodes | 2 |
+| **cenvalarc.gpu** | **3 days** | 1 day | 2 nodes | 4 |
+
+So to directly answer your question:
+- **`test`**: max wall time is **1 hour** — matches what you saw earlier ("Job has exceeded its time limit" after your `salloc` was on `test`).
+- **`cenvalarc.gpu`**: max wall time is **3 days**, with a default of 1 day if you don't specify `-t`.
+
+One nuance: the doc notes `test` "has access to all node types" via `--constraint`, so you can use it to quickly check hardware on any node type (like you were doing with `gnode022`), but you're capped at 1 hour — fine for testing/debugging, not for actual training runs. For real training jobs on L40S nodes, you'd want `cenvalarc.gpu` (up to 3 days) and specify `-t` explicitly if you want less than the 1-day default, or up to `-t 3-00:00:00` for the max.
+
+
+s.sh
+Submitted batch job 175749
+(LaneNet310) [anindra@gnode009 Yolov11]$ sbatch yolo11m.sh
+Submitted batch job 175750
+(LaneNet310) [anindra@gnode009 Yolov11]$ sbatch yolo11n.sh
+Submitted batch job 175751
+(LaneNet310) [anindra@gnode009 Yolov11]$ scancel 175751 <----- NOOOOO
+
+
+(LaneNet310) [anindra@gnode009 Yolov11]$ sbatch yolo11
+n.sh
+Submitted batch job 175770
+
+
+(base) [anindra@rclogin02 Yolov11]$ sbatch yolo11s_continue.sh
+Submitted batch job 177176
+
+(base) [anindra@rclogin02 Yolov11]$ sbatch yolo11m_continue.sh
+Submitted batch job 177180
+
+
+new Yolov11
+
+(LaneNet310) [anindra@rclogin03 shell]$ sbatch yolo11s.sh
+Submitted batch job 183266
+(LaneNet310) [anindra@rclogin03 shell]$ sbatch yolo11m.sh
+Submitted batch job 183267
+(LaneNet310) [anindra@rclogin03 shell]$ sbatch yolo11n.sh
+Submitted batch job 183268
+(LaneNet310) [anindra@rclogin03 shell]$ 
+
+
+
+
+Base Output with rergular bdd100k classes.
+
+{'traffic sign': 239961, 'traffic light': 186301, 'car': 714121, 'area/drivable': 64050, 'lane/road curb': 109868, 'lane/double yellow': 37519, 'truck': 30012, 'bus': 11688, 'area/alternative': 61799, 'lane/single yellow': 20220, 'lane/single white': 247108, 'person': 91435, 'lane/crosswalk': 108284, 'rider': 4522, 'bike': 7227, 'lane/single other': 249, 'lane/double white': 5674, 'motor': 3002, 'train': 136, 'area/unknown': 2, 'lane/double other': 26}
+

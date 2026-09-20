@@ -1,0 +1,151 @@
+.venv
+.bdd100k-models
+/bdd100k-models
+100k
+bdd100k_drivable_maps
+bdd100k_drivable_maps.zip
+bdd100k_images_100k.zip
+bdd100k_labels.zip
+100k_images
+drivable_maps
+runs
+downloaded_models
+new_data
+.DS_Store
+*.DS_Store
+__pycache__/
+*.pyc
+*.pth
+*.pt
+*.engine
+*.plan
+*.trt
+*.mp4
+*.mov
+
+# Useless/deeplab
+# Useless/HybridNets
+# Useless/HybridNets_Jetson
+LaneNet/lanenet-lane-detection-pytorch/data
+lanenet-lane-detection-pytorch/data
+HybridNets/data
+HybridNets/data/
+Useless/HybridNets/data/
+Useless/HybridNets/data
+LaneNet/archive
+LaneNet/lanenet-lane-detection-pytorch/TuSimple.tar.gz
+lanenet-lane-detection-pytorch/TuSimple.tar.gz
+# Useless/lanenet-lane-detection-pytorch
+LaneNet/archive.zip
+new_data.tar
+LaneNet/CuLane Extra
+LaneNet/CuLane
+# Useless/LaneTCA
+
+#Useless/Send
+
+LaneNet/TUSimple
+/Send/numpy_output
+
+
+
+Useless/HybridNets_Jetson/onnx
+*.onnx
+*.onnxruntime
+
+# Send output files
+Useless/HybridNets_Jetson/numpy_videos
+Useless/HybridNets_Jetson/numpy_output
+
+Useless/HybridNets_Jetson/numpy_concat
+Useless/HybridNets_Jetson/numpy_videos_concat
+CuLane
+TUSimple
+
+
+# ROS2 workspace files
+
+ros2_ws/*.pyc
+ros2_ws/*.iml
+ros2_ws/*.swp
+ros2_ws/.project
+ros2_ws/.pydevproject
+ros2_ws/.DS_Store
+ros2_ws/.idea
+
+ros2_ws/.vscode/*
+ros2_ws/!.vscode/extensions.json
+ros2_ws/!.vscode/settings.json
+
+# colcon/CMake output
+ros2_ws/build
+ros2_ws/install
+ros2_ws/log
+
+ros2_ws_old/*.pyc
+ros2_ws_old/*.iml
+ros2_ws_old/*.swp
+ros2_ws_old/.project
+ros2_ws_old/.pydevproject
+ros2_ws_old/.DS_Store
+ros2_ws_old/.idea
+
+ros2_ws_old/.vscode/*
+ros2_ws_old/!.vscode/extensions.json
+ros2_ws_old/!.vscode/settings.json
+
+# colcon/CMake output
+ros2_ws_old/build
+ros2_ws_old/install
+ros2_ws_old/log
+
+
+.vscode
+
+/LaneATT/cache
+LaneATT/experiments
+LaneATT/logs
+LaneATT/video_output
+LaneATT/video_output_2
+
+yolov12/dataset
+Yolov11/dataset
+Yolov11/logs
+
+
+LaneATT/depth_model
+LaneATT/onnxmodels
+
+LaneATT/video_output_3
+
+# Test video corpus — 1.8 GB, including a 1.16 GB video.tar.gz.
+# The *.mov / *.mp4 rules above are lowercase, so they match on macOS
+# (case-insensitive) but NOT on the Jetson's Linux filesystem — which is why
+# `git status` there offers to commit files GitHub would reject at 100 MB.
+LaneATT/video_input/
+*.tar.gz
+*.MOV
+*.MP4
+
+LaneATT/jetson_video/
+
+LaneATT/jetson_video
+
+.claude
+
+
+/.claude
+.claude/
+claude/
+
+
+# Credentials and local development artifacts
+kaggle.json
+.env
+.env.*
+*.pem
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
