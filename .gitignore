@@ -1,0 +1,11 @@
+
+# Credentials and local development artifacts
+kaggle.json
+.env
+.env.*
+*.pem
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
