@@ -13,14 +13,18 @@ flowchart LR
 ```
 
 The portable core separates dynamics, estimation, control, safety, planning,
-and experiment orchestration. Future ROS adapters should wrap these boundaries
-without embedding hardware access in the numerical core. The existing v1
-perception and ROS packages need interface reconciliation before integration.
+and experiment orchestration. `runtime.py` adds acquisition-stamped observations,
+ordered fusion and command validation, shared by the standalone and ROS paths.
+`research/ros2_ws` now implements plant, estimator, controller and recorder
+processes in `bicycle_simulation`, with messages in `bicycle_interfaces`.
+See [implemented ROS interfaces](docs/ROS.md). The existing v1 perception and
+ROS packages still need calibration and timestamp adapters before integration.
 
 Proposed ROS boundaries: bicycle_hardware, bicycle_state_estimation,
 bicycle_perception, bicycle_world_model, bicycle_planning, bicycle_control,
 bicycle_safety, bicycle_logging, bicycle_simulation, bicycle_bringup.
-These are planned package names, not installed packages in this baseline.
+Most of these are planned package names; the current two packages above group
+the initial transport adapters while preserving executable process boundaries.
 
 Proposed topics (not yet implemented):
 
@@ -33,8 +37,8 @@ Proposed topics (not yet implemented):
 | /world/occupancy | nav_msgs/OccupancyGrid | world model → planner | 10 Hz | free/occupied/unknown |
 | /plan/path | nav_msgs/Path | planner → trajectory generator | 10 Hz | geometric path |
 
-Actuator commands require a dedicated stamped interface with validity duration,
-sequence, limits, and watchdog semantics before hardware integration. Nav Path
+The simulation command interface now carries validity duration, sequence, limits,
+and watchdog semantics. Hardware requires an independent protocol and validation. Nav Path
 alone cannot represent speed, curvature and lean feasibility constraints.
 Future TF: map → odom → base_link → sensor frames; x forward, y left, z up.
 Each measurement must carry acquisition time and covariance. No wall-clock and

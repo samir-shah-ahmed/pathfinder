@@ -3,6 +3,16 @@ name: AV
 description: Context and working conventions for Aman's real-time autonomous e-bike ("Pathfinder") ADAS perception-to-control pipeline. Target deployment is a Jetson Orin Nano Super, but current dev/validation happens on a Mac (local) and UC Merced's HPC cluster (L40S/A100) — no physical-Jetson benchmarks exist in this repo yet. Covers lane detection (LaneATT), object detection (YOLO11), monocular depth (Depth-Anything-V2, relative and metric variants), Stanley steering + lead-vehicle (CIPV) selection, planned Kalman tracking + IDM control, ONNX/TensorRT export, ESP32-S3 firmware (steering encoder, brake relay, PWM speed — on the unmerged origin/S3-code branch, not on main), and the UC Merced HPC/Vista Compute Lab infrastructure. Use this skill whenever working in this repo, discussing architecture/compute-budget decisions, or reviewing what's actually implemented vs. only planned — even if the user doesn't name a component directly.
 ---
 
+## Pathfinder continuation — 2026-09-20
+
+This file's remaining sections describe the imported v1 project and its historical
+machines/results. Current new work is under `research/`; see its `STATUS.md` and
+`docs/ROS.md`. The numerical core now exposes shared plant/fusion components and
+the isolated `research/ros2_ws` has ROS Jazzy plant, estimator, controller and
+recorder processes. V1 lane arrays and speed commands are not connected to it.
+New tests exercise ordering, command validation and frame conversions; ROS CI
+builds a disposable Ubuntu container. No imported hardware benchmark was rerun.
+
 # Pathfinder — AV Perception-to-Control Pipeline
 
 ## Project Goal

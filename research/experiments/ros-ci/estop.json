@@ -1,0 +1,21 @@
+{
+  "mode": "ESTOP",
+  "reason": "Operator emergency stop; simulation frozen",
+  "sequence": 51,
+  "sim_time_s": 0.51,
+  "data_source": "SIMULATED",
+  "samples": 52,
+  "all_samples_paired": true,
+  "cross_track_rmse_m": 0.15962369555259143,
+  "max_abs_lean_rad": 0.020076432748454293,
+  "estimation_rmse": {
+    "x": 0.161710221087393,
+    "y": 0.01487014783240665,
+    "yaw": 0.004630996565942419,
+    "speed": 0.014516969664114561,
+    "lean": 0.0023798248380755577,
+    "lean_rate": 0.007912840357323064,
+    "steer": 0.00232757670876829
+  },
+  "degraded_samples": 0
+}

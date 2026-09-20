@@ -31,6 +31,22 @@ seed, a lean disturbance, or a GNSS dropout interval. Units are SI.
 - Simulation fault supervisor with latched fault/estop, timeout and lean checks.
 - Standalone conservative grid A* with obstacle inflation and unknown-space rejection.
 - Seeded telemetry, tracking/estimation metrics, unit and closed-loop tests.
+- ROS 2 Jazzy processes, stamped interfaces, odometry/TF, URDF, RViz configuration,
+  synchronized recording, command watchdog and emergency-stop service.
+- Published Whipple linear reference model and independent eigenvalue/stability tests;
+  see [dynamics validation](docs/DYNAMICS_VALIDATION.md).
+
+## ROS 2 experiment
+
+From the repository root:
+
+```sh
+docker build -t pathfinder-ros -f research/docker/Dockerfile .
+docker run --rm -v "${PWD}/runs:/workspace/runs" pathfinder-ros
+```
+
+See [ROS setup, interfaces and validation](docs/ROS.md). This builds the isolated
+research ROS workspace. Existing v1 perception is not connected to the controller.
 
 ## Model and limits
 
@@ -52,6 +68,6 @@ The supervisor halts the simulator on a fault. It does not implement a physical
 safe stop or certified safety system. A* returns grid paths, not dynamically
 feasible trajectories, and is not connected to the tracking demonstration.
 
-ROS publishing, Gazebo contact simulation, camera rendering, real perception
+Gazebo contact simulation, camera rendering, real perception
 integration, MPC, MCU watchdogs and physical testing remain future work.
 Existing v1 ROS/perception code is preserved in the repository root.

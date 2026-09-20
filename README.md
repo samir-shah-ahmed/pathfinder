@@ -20,8 +20,11 @@ for source commits and the exact exclusions/redactions.
 
 The independent [research](research/README.md) directory adds a reduced bicycle
 dynamics model, PD/LQR balance control, EKF, seeded synthetic sensors, telemetry,
-fault checks, grid-planning baseline, and tests. It is not wired into v1 ROS or
-physical hardware. See [research/STATUS.md](research/STATUS.md) for verified results
+fault checks, grid-planning baseline, and tests. It now includes a separate ROS 2
+Jazzy workspace with stamped interfaces, four simulation processes, TF/odometry,
+visualization geometry, recording, and failure tests. It is not wired into v1
+perception or physical hardware. See [ROS instructions](research/docs/ROS.md),
+[research/STATUS.md](research/STATUS.md) for verified results
 and [research/ROADMAP.md](research/ROADMAP.md) for remaining work.
 
 ```sh

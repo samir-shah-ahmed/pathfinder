@@ -9,9 +9,13 @@ Legend: [x] complete, [~] in progress, [ ] not started, [!] blocked here.
 - [x] Seven-state EKF baseline; GNSS dropout experiment.
 - [x] Grid A* baseline with conservative unknown-space handling.
 - [x] Simulation fault supervisor and failure tests.
-- [~] ROS boundaries: documented, adapters not implemented for new core.
-- [!] ROS/Gazebo integration execution: unavailable in this Windows session.
-- [ ] Whipple/multibody model and independent model validation.
+- [x] ROS message interfaces, separate plant/estimator/controller/recorder processes.
+- [x] Odometry, TF, visual URDF, RViz configuration, acquisition-stamped recording.
+- [x] Portable sequence/freshness/command/frame tests; ROS process tests implemented.
+- [x] ROS integration execution: Docker build and 3 real-process tests passed in CI.
+- [ ] Gazebo contact dynamics and rendered sensor simulation.
+- [x] Fixed-geometry Whipple linear benchmark; independent published-eigenvalue checks.
+- [ ] Measured project geometry, servo adapter and nonlinear multibody/contact validation.
 - [ ] Raw IMU/bias estimation, delayed measurements, VIO and RTK fusion.
 - [ ] Connect and test v1 perception against explicit output contracts.
 - [ ] Metric depth, BEV and semantic traversability integration.

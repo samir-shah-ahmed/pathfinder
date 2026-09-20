@@ -1,5 +1,6 @@
 """Real ROS process tests. Run after colcon build + sourcing install/setup.bash."""
 
+import csv
 import json
 import os
 from pathlib import Path
@@ -19,6 +20,7 @@ from std_srvs.srv import Trigger
 from tf2_msgs.msg import TFMessage
 
 from pathfinder.runtime import orientation
+from pathfinder.simulation import Simulation
 
 
 class Session:
@@ -169,6 +171,19 @@ def test_ros_closed_loop_and_frames(session_factory):
         assert odom.header.frame_id == "map" and odom.child_frame_id == "base_link"
         matched += 1
     assert matched > 100
+    # Check actual DDS-transported results against the portable core, step by step.
+    reference = Simulation(json.loads(session.config.read_text()))
+    with (session.output / "telemetry.csv").open() as stream:
+        rows = list(csv.DictReader(stream))
+    fields = ["x", "y", "yaw", "speed", "lean", "lean_rate", "steer"]
+    for sequence, row in enumerate(rows[1:], 1):
+        truth, estimate, _, _ = reference.step()
+        assert int(row["sequence"]) == sequence
+        assert float(row["sim_time_s"]) == pytest.approx(sequence * 0.01)
+        np.testing.assert_allclose([float(row["truth_" + f]) for f in fields], truth, atol=1e-12)
+        np.testing.assert_allclose(
+            [float(row["estimate_" + f]) for f in fields], estimate, atol=1e-12
+        )
     session.launch.wait(timeout=15)
     assert session.launch.returncode == 0
 

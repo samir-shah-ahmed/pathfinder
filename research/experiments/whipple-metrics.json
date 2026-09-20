@@ -1,0 +1,12 @@
+{
+  "data_source": "LINEAR_PUBLISHED_BENCHMARK_SIMULATION",
+  "reference_doi": "10.1098/rspa.2007.1857",
+  "gravity_m_s2": 9.81,
+  "weave_boundary_m_s": 4.292382536341135,
+  "capsize_boundary_m_s": 6.024262015388423,
+  "absolute_boundary_errors_m_s": [
+    2.4868995751603507e-14,
+    5.3290705182007514e-14
+  ],
+  "validates": "Published fixed-geometry linear equations only; not Pathfinder hardware or reduced-model controllers"
+}

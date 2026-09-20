@@ -1,0 +1,21 @@
+{
+  "mode": "COMPLETE",
+  "reason": "All simulated steps acknowledged",
+  "sequence": 1300,
+  "sim_time_s": 13.0,
+  "data_source": "SIMULATED",
+  "samples": 1301,
+  "all_samples_paired": true,
+  "cross_track_rmse_m": 0.08249839709885828,
+  "max_abs_lean_rad": 0.020076432748454293,
+  "estimation_rmse": {
+    "x": 0.09053489379322054,
+    "y": 0.0863250852471501,
+    "yaw": 0.0055313463594463255,
+    "speed": 0.01447617947512859,
+    "lean": 0.002394436648954799,
+    "lean_rate": 0.008586065694776416,
+    "steer": 0.0022838425931559657
+  },
+  "degraded_samples": 219
+}

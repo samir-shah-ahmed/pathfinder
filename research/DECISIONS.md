@@ -8,6 +8,12 @@
 | EKF with Joseph update | UKF/factor graph | Small baseline with consistent covariance update; no sensor bias states yet. |
 | Gazebo Harmonic / ROS Jazzy / Ubuntu 24.04 as future integration target | Isaac Sim | Official supported pairing and ROS integration; no local Gazebo verification. Isaac remains an option for visual datasets. |
 | Keep Jetson runtime separate | Assume desktop stack works on Jetson | JetPack 6.2 is based on Ubuntu 22.04; do not claim Jazzy native compatibility without a deployment validation. |
+| Lockstep ROS numerical simulation before Gazebo | Free-running asynchronous numerical loop | Each command acknowledges one sensor frame, making ordering and transport parity testable. Does not demonstrate real-time deadlines. |
+| Isolated research ROS workspace | Build all v1 packages together | Existing v1 dependencies and unstamped topics differ; integration needs explicit calibration and timestamp adapters. |
+| Wall-clock command watchdog | Simulation-clock timeout | A stalled /clock must not disable timeout detection. Freezes the numerical experiment, not a physical safe stop. |
+| One ROS adapter package with four executable processes | Four nearly empty packages | Preserves process boundaries without duplicating packaging; split packages when independent deployment requires it. |
+| Validate fixed-geometry Whipple benchmark separately | Treat the reduced model as a physical digital twin | Independent published eigenvalues catch dynamics implementation errors. Torque input differs from the reduced servo interface; no controller transfer is claimed. |
+| System-visible virtualenv inside ROS container | Upgrade apt-owned Python packages with pip | First CI build exposed an uninstall conflict on apt pluggy; venv isolates pinned dependencies while retaining ROS modules. |
 
 No hardware purchases or final communications bus are selected. The imported
 ESP32 branch is historical v1 firmware, not validated for the new core.
