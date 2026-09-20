@@ -18,6 +18,7 @@ class Supervisor:
     def __init__(self):
         self.mode = Mode.INIT
         self.reason = "awaiting checks"
+        self.armed = False
 
     def check(self, state, sensor_age=0.0, heartbeat_age=0.0, gnss_age=0.0, estop=False):
         if self.mode in (Mode.FAULT, Mode.ESTOP):
@@ -35,7 +36,12 @@ class Supervisor:
         elif abs(state[4]) > 0.45 or state[3] < 1.0:
             self.mode, self.reason = Mode.FAULT, "outside balance operating envelope"
         else:
-            self.mode = Mode.DEGRADED if gnss_age > 1.0 else Mode.READY
+            if gnss_age > 1.0:
+                self.mode = Mode.DEGRADED
+            elif self.armed:
+                self.mode = Mode.ACTIVE
+            else:
+                self.mode = Mode.READY
             self.reason = "GNSS unavailable" if gnss_age > 1.0 else "checks passed"
         return self.mode
 
@@ -43,3 +49,4 @@ class Supervisor:
         if self.mode != Mode.READY:
             raise RuntimeError("Cannot arm before checks pass")
         self.mode = Mode.ACTIVE
+        self.armed = True

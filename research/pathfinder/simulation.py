@@ -9,52 +9,39 @@ import time
 import numpy as np
 
 from .control import Controller, Reference
-from .estimation import EKF
-from .model import Bicycle, Parameters, wrap
+from .model import wrap
+from .runtime import Fusion, Plant
 from .safety import Mode, Supervisor
 
 
 class Simulation:
     def __init__(self, config):
         self.config = config
-        self.dt = config.get("dt", 0.01)
-        self.model = Bicycle(Parameters(**config.get("model", {})))
-        self.truth = np.array([0, 0.2, 0, 3, 0.02, 0, 0], dtype=float)
-        self.filter = EKF([0, 0, 0, 3, 0, 0, 0], self.model)
+        self.plant = Plant(config)
+        self.fusion = Fusion(config)
+        self.fusion.consume(self.plant.observation)
+        self.dt = self.plant.dt
+        self.model = self.plant.model
+        self.filter = self.fusion.filter
         self.reference = Reference(config.get("route", "curve"))
         self.controller = Controller(
             self.reference, self.model.p, mode=config.get("controller", "lqr")
         )
-        self.rng = np.random.default_rng(config.get("seed", 7))
         self.supervisor = Supervisor()
         self.supervisor.check(self.filter.x)
         self.supervisor.arm()
         self.t = 0.0
-        self.last_gnss = 0.0
         self.steps = 0
 
     def step(self):
         command = self.controller.command(self.filter.x)
-        disturbance = 0.35 if self.config.get("disturbance", True) and 5 <= self.t < 5.2 else 0
-        self.truth = self.model.step(self.truth, command, self.dt, disturbance)
-        self.filter.predict(command, self.dt)
-        # Idealized attitude-solution + encoders, NOT raw IMU fusion.
-        ids = [2, 3, 4, 5, 6]
-        std = np.array([0.01, 0.03, 0.004, 0.01, 0.003])
-        measured = self.truth[ids] + self.rng.normal(0, std)
-        self.filter.update(measured, ids, std**2)
-        dropout = self.config.get("gnss_dropout", [8, 11])
-        if self.steps % 20 == 0 and not dropout[0] <= self.t < dropout[1]:
-            self.filter.update(self.truth[:2] + self.rng.normal(0, 0.25, 2), [0, 1], [0.0625] * 2)
-            self.last_gnss = self.t
-        mode = self.supervisor.check(self.filter.x, gnss_age=self.t - self.last_gnss)
-        if mode == Mode.READY:
-            self.supervisor.arm()
-        if mode in (Mode.FAULT, Mode.ESTOP) or abs(self.truth[4]) > 0.6:
+        self.fusion.consume(self.plant.step(command))
+        mode = self.supervisor.check(self.filter.x, gnss_age=self.fusion.gnss_age)
+        if mode in (Mode.FAULT, Mode.ESTOP):
             raise RuntimeError(f"Simulation halted: {self.supervisor.reason}")
-        self.t += self.dt
-        self.steps += 1
-        return self.truth.copy(), self.filter.x.copy(), command, self.supervisor.mode.value
+        self.t = self.plant.time
+        self.steps = self.plant.sequence
+        return self.plant.truth.copy(), self.filter.x.copy(), command, mode.value
 
 
 def run(config, output):

@@ -1,0 +1,44 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+Visualization Manager:
+  Class: ""
+  Global Options:
+    Fixed Frame: map
+    Background Color: 35; 39; 45
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Cell Size: 1
+      Plane Cell Count: 100
+    - Class: rviz_default_plugins/RobotModel
+      Name: Bicycle
+      Enabled: true
+      Description Source: Topic
+      Description Topic:
+        Value: /bicycle/robot_description
+        Durability Policy: Transient Local
+    - Class: rviz_default_plugins/Path
+      Name: Reference
+      Enabled: true
+      Topic:
+        Value: /bicycle/reference
+        Durability Policy: Transient Local
+      Color: 70; 220; 140
+    - Class: rviz_default_plugins/Odometry
+      Name: Estimated odometry
+      Enabled: true
+      Topic:
+        Value: /bicycle/odometry
+      Keep: 100
+    - Class: rviz_default_plugins/TF
+      Name: Frames
+      Enabled: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 12
+      Pitch: 0.5
+      Yaw: 0.8
+      Target Frame: base_link

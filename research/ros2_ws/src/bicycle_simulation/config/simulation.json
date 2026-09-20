@@ -1,0 +1,14 @@
+{
+  "duration": 20,
+  "dt": 0.01,
+  "seed": 7,
+  "route": "curve",
+  "controller": "lqr",
+  "disturbance": true,
+  "gnss_dropout": [8, 11],
+  "model": {
+    "wheelbase": 1.1,
+    "height": 0.65,
+    "steer_tau": 0.1
+  }
+}

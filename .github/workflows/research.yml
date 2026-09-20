@@ -22,3 +22,25 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: python -m pytest -q
+  ros-integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ROS Jazzy environment and packages
+        run: docker build -t pathfinder-ros -f research/docker/Dockerfile .
+      - name: Test ROS processes, transforms, watchdog and estop
+        run: |
+          mkdir -p research/runs/ros-ci
+          docker run --rm \
+            -e ROS_TEST_OUTPUT=/results \
+            -e ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST \
+            -v "$PWD/research/runs/ros-ci:/results" \
+            pathfinder-ros python3 -m pytest -q /workspace/research/ros_tests
+      - name: Save integration logs and simulated telemetry
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ros-integration-results
+          path: research/runs/ros-ci
+          if-no-files-found: ignore
